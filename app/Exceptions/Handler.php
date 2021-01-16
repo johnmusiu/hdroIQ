@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\UnauthorizedException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Throwable;
 
@@ -45,8 +46,13 @@ class Handler extends ExceptionHandler
     {
         if($e instanceof ModelNotFoundException)
         {
-            return response()->json(['error' => $e->getMessage()], 404);
+            return response()->json(['message' => $e->getMessage()], 404);
+        }
+        if($e instanceof UnauthorizedException){
+            return response()->json(['message' => $e->getMessage()], 403);
         }
         return parent::render($request, $e);
+//        return response()->json(['message' => $e->getMessage()], 401);
+
     }
 }

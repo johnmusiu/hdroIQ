@@ -14,9 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::get('/', function (){
+    return response()->json(['message' => 'login to access'], 401);
+})->name('/');
 
-Route::apiResource('tasks', \App\Http\Controllers\API\TaskController::class);
-Route::post('users', "\App\Http\Controllers\API\UserController@store");
+Route::post('/login', '\App\Http\Controllers\API\AuthController@login');
+Route::post('/register', "\App\Http\Controllers\API\UserController@store");
+
+Route::apiResource('tasks', \App\Http\Controllers\API\TaskController::class)->middleware('auth:api');
