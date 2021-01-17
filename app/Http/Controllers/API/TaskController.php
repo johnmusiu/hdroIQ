@@ -19,7 +19,7 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        return response()->json(Task::all(), 200);
+        return response()->json(['tasks' => Task::with('user')->get()], 200);
     }
 
     /**
@@ -32,18 +32,19 @@ class TaskController extends Controller
     {
         $task = Task::create($request->all());
 
-        return response()->json($task, 201);
+        return response()->json(['task' => $task], 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param Task $task
+     * @param $id
      * @return Response
      */
-    public function show(Task $task): Response
+    public function show($id): Response
     {
-        return response($task, 200);
+        $task = Task::with('user')->find($id);
+        return response(['task' => $task], 200);
     }
 
     /**
@@ -61,7 +62,7 @@ class TaskController extends Controller
 
         $task->update($request->all());
 
-        return response()->json($task, 200);
+        return response()->json(['task' => $task], 200);
     }
 
     /**
