@@ -18,7 +18,7 @@ Route::get('/', function (){
     return response()->json(['message' => 'login to access'], 401);
 })->name('/');
 
-Route::post('/login', '\App\Http\Controllers\API\AuthController@login');
+Route::post('/login', '\App\Http\Controllers\API\AuthController@login')->name('login');
 Route::post('/register', "\App\Http\Controllers\API\UserController@store")->middleware('auth:api');
 
 Route::apiResource('tasks', \App\Http\Controllers\API\TaskController::class)->middleware('auth:api');

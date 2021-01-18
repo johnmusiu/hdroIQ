@@ -5,10 +5,12 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskAssigned;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
@@ -19,7 +21,8 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        return response()->json(['tasks' => Task::with('user')->get()], 200);
+        $tasks = Task::with('user')->orderBy('created_at', 'ASC')->get();
+        return response()->json(['tasks' => $tasks], 200);
     }
 
     /**
@@ -30,6 +33,17 @@ class TaskController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $validator = Validator::make($request->all(),[
+            'name' => 'required',
+            'description' => 'required',
+            'date_due' => 'required|date|after:now',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->getMessageBag(), 400);
+        }
+
+
         $task = Task::create($request->all());
 
         return response()->json(['task' => $task], 201);
@@ -56,13 +70,22 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task): JsonResponse
     {
+        $request->validate(
+            []
+        );
+
+        if($task->user_id !== null){
+            return response()->json(['error' => 'Cannot re-assign task. Task is assigned to: '. $task->user->name], 200);
+        }
         if($request['user_id']){
-            User::findOrFail($request['user_id']);
+            $user = User::findOrFail($request['user_id']);
+            $task->update($request->all());
+            $user->notify(new TaskAssigned($task));
+        }else{
+            $task->update($request->all());
         }
 
-        $task->update($request->all());
-
-        return response()->json(['task' => $task], 200);
+        return response()->json( $task, 200);
     }
 
     /**

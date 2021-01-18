@@ -23,8 +23,8 @@ class TaskFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->name,
-            'description' => $this->faker->sentence,
+            'name' => $this->faker->sentence,
+            'description' => $this->faker->paragraph,
             'date_assigned' => now(),
             'date_due' => $this->faker->dateTimeBetween(now(), 'next month'),
             'user_id' => User::all()->random()->id,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -14,17 +15,22 @@ class AuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        $request->validate([
+        $validator = Validator::make($request->all(),[
             'email' => 'email|required',
             'password' => 'required',
         ]);
 
-        if(!auth()->attempt($request->all())){
-            return response()->json(['message' => "Invalid credentials"]);
+        if ($validator->fails()) {
+            return response()->json($validator->getMessageBag(), 400);
         }
 
-        $token = auth()->user()->createToken('authToken')->accessToken;
+        if(!auth()->attempt($request->all())){
+            return response()->json(['error'=>'Invalid credentials']);
+        }
+        $user = auth()->user();
+        $token = $user->createToken('authToken')->accessToken;
+        $user['token'] = $token;
 
-        return response()->json(['user' => auth()->user(), 'access_token' => $token]);
+        return response()->json($user);
     }
 }
